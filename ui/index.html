@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>弹幕狼人杀 · AI 主播助手</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a3040;
+    --txt:#e6e9ef; --dim:#8b95a7; --acc:#7c5cff; --acc2:#2ee6a8;
+    --warn:#ffb020; --danger:#ff5c5c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--txt); height:100vh; overflow:hidden;
+    font:13px/1.5 "Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+    display:flex; flex-direction:column;
+  }
+  header{
+    height:52px; flex:0 0 52px; display:flex; align-items:center; gap:12px;
+    padding:0 16px; background:var(--panel); border-bottom:1px solid var(--line);
+  }
+  .logo{font-weight:700;font-size:15px;letter-spacing:.5px}
+  .logo span{color:var(--acc)}
+  .badge{
+    padding:3px 9px;border-radius:20px;font-size:11px;border:1px solid var(--line);
+    color:var(--dim);display:flex;align-items:center;gap:5px;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:#556}
+  .dot.on{background:var(--acc2);box-shadow:0 0 8px var(--acc2)}
+  .dot.err{background:var(--danger)}
+  main{flex:1;display:grid;grid-template-columns:1fr 380px;gap:10px;padding:10px;overflow:hidden}
+  .col{display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+  .card h3{
+    font-size:11px;font-weight:600;color:var(--dim);letter-spacing:1px;
+    padding:8px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;
+    text-transform:uppercase;
+  }
+  .card h3 .tag{font-size:10px;color:var(--acc);letter-spacing:0;text-transform:none}
+  .scroll{overflow-y:auto;padding:8px 12px;flex:1;min-height:0}
+  .scroll::-webkit-scrollbar{width:6px}
+  .scroll::-webkit-scrollbar-thumb{background:#333a4a;border-radius:3px}
+  .dm{display:flex;gap:8px;padding:3px 0;font-size:12.5px;word-break:break-all}
+  .dm .u{color:var(--acc2);flex:0 0 auto;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dm.sc .u{color:var(--warn)}
+  .dm .t{color:var(--txt);opacity:.92}
+  .say{padding:4px 0;font-size:12.5px;color:#cbb8ff;border-left:2px solid var(--acc);padding-left:8px;margin:4px 0;word-break:break-all}
+  .log{padding:1px 0;font-size:11.5px;color:var(--dim);font-family:Consolas,monospace;word-break:break-all}
+  .log.err{color:var(--danger)}
+  .now{margin-left:auto;display:flex;gap:2px;align-items:center;font-size:11px;color:var(--dim)}
+  button{
+    background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:7px;
+    padding:7px 14px;font-size:12.5px;cursor:pointer;transition:.15s;font-family:inherit;
+  }
+  button:hover{border-color:var(--acc);color:#fff}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  button.primary{background:var(--acc);border-color:var(--acc);font-weight:600}
+  button.primary:hover{background:#6b4df0}
+  button.ghost{background:transparent}
+  button.sm{padding:4px 10px;font-size:11.5px}
+  input,select{
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;color:var(--txt);
+    padding:7px 10px;font-size:12.5px;width:100%;font-family:inherit;outline:none;
+  }
+  input:focus,select:focus{border-color:var(--acc)}
+  .row{display:flex;gap:8px;align-items:center}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+  .field label{font-size:11px;color:var(--dim)}
+  .aside{display:flex;flex-direction:column;gap:10px;overflow-y:auto;padding-right:2px}
+  .aside>.card{flex:0 0 auto}
+  .aside::-webkit-scrollbar{width:6px}
+  .aside::-webkit-scrollbar-thumb{background:#333a4a;border-radius:3px}
+  .body-pad{padding:10px 12px}
+  .switch{display:flex;justify-content:space-between;align-items:center;padding:6px 0}
+  .switch span{font-size:12px;color:var(--txt)}
+  .track{padding:6px 0;border-bottom:1px dashed #232838;font-size:12px}
+  .track:last-child{border:none}
+  .track .n{color:var(--txt)}
+  .track .a{color:var(--dim);font-size:11px;margin-left:6px}
+  .track .btn{float:right}
+  .empty{color:#4a5468;font-size:11.5px;padding:8px 0;text-align:center}
+  .np-name{font-size:14px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .np-artist{font-size:11.5px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .np-next{font-size:11.5px;color:var(--acc2);margin-top:7px;padding-top:7px;border-top:1px dashed #232838;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lyric{max-height:170px;line-height:1.85;color:#a8b2c4;font-size:12px;text-align:center}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 12px}
+  .stat{background:var(--panel2);border-radius:8px;padding:8px 4px;text-align:center;min-width:0;overflow:hidden}
+  .stat b{display:block;font-size:15px;color:var(--acc2)}
+  .stat i{font-size:10px;color:var(--dim);font-style:normal;white-space:nowrap}
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:#242a36;border:1px solid var(--line);padding:9px 18px;border-radius:8px;
+    font-size:12.5px;opacity:0;transition:.25s;pointer-events:none;z-index:99;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+  .tabs{display:flex;gap:4px;padding:6px 8px 0}
+  .tab{padding:5px 12px;font-size:12px;border-radius:6px 6px 0 0;cursor:pointer;color:var(--dim)}
+  .tab.on{background:var(--panel2);color:var(--txt)}
+  .pane{display:none;flex:1;min-height:0;flex-direction:column}
+  .pane.on{display:flex}
+  .acc-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:1px solid var(--line);border-radius:14px;font-size:11.5px;color:var(--txt);cursor:pointer;user-select:none;background:var(--panel2)}
+  .acc-pill.disabled{opacity:.45;cursor:not-allowed}
+  .acc-pill input{width:auto;margin:0;accent-color:var(--acc)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">弹幕狼人杀 · <span>AI 主播助手</span></div>
+  <div class="badge"><span class="dot" id="dotConn"></span><span id="connTxt">未连接</span></div>
+  <div class="badge" id="roomTag" style="display:none"></div>
+  <div class="now" id="nowPlaying"></div>
+  <button class="primary" id="btnStart">启动</button>
+  <button id="btnStop" disabled>停止</button>
+</header>
+
+<main>
+  <div class="col">
+    <div class="card" style="flex:1">
+      <h3>
+        弹幕 / AI 发言
+        <span class="tag" id="dmCount">0 条</span>
+      </h3>
+      <div class="scroll" id="feed"></div>
+    </div>
+    <div class="card" style="flex:0 0 150px">
+      <h3>手动发言（测试 / 主播口播草稿）</h3>
+      <div class="body-pad">
+        <div class="row">
+          <input id="sayInput" placeholder="输入要说的话，回车发送到 AI 播报区" />
+          <button class="primary" id="btnSay">发送</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="ghost sm" id="btnGame">启动游戏本体</button>
+          <button class="ghost sm" id="btnLog">打开日志</button>
+          <span style="font-size:11px;color:var(--dim);margin-left:auto">点歌指令：弹幕发「点歌 歌名」</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="aside">
+    <div class="card">
+      <h3>运行统计</h3>
+      <div class="stats">
+        <div class="stat"><b id="sDm">0</b><i>弹幕</i></div>
+        <div class="stat"><b id="sSong">0</b><i>点歌</i></div>
+        <div class="stat"><b id="sAi">0</b><i>AI回复</i></div>
+        <div class="stat"><b id="sMiss">0</b><i>无版权</i></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>狼人杀导演 AI <span class="tag" id="dirStatus">空闲</span></h3>
+      <div class="body-pad">
+        <div style="font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:8px">
+          自动带 5 个账号参赛（含主播号），负责夜刀 / 选房 / 跟票 / 解说。先「打开游戏窗口」并在游戏内点「开启玩法」接入直播间，再启动导演。
+        </div>
+        <div class="row" style="margin-bottom:8px">
+          <button class="primary sm" id="btnDirStart">启动导演</button>
+          <button class="sm" id="btnDirStop" disabled>停止</button>
+          <button class="sm" id="btnDirRestart" style="margin-left:auto">保存并重启</button>
+        </div>
+        <div class="field" style="margin-bottom:6px">
+          <label>导演配置（难度 / 剧本 / 指令，改完点「保存并重启」生效）</label>
+          <textarea id="dirCfg" rows="10" style="width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:7px;color:var(--txt);font:11.5px/1.5 Consolas,monospace;padding:8px;resize:vertical"></textarea>
+        </div>
+        <div class="row">
+          <button class="sm" id="btnDirCfgLoad">加载配置</button>
+          <button class="sm" id="btnDirCfgSave">保存配置</button>
+          <button class="ghost sm" id="btnDirOpen" style="margin-left:auto">打开配置目录</button>
+        </div>
+      </div>
+      <h3 style="border-top:1px solid var(--line)">导演日志</h3>
+      <div class="scroll" id="dirLog" style="max-height:170px"></div>
+    </div>
+
+    <div class="card">
+      <h3>地下城（BoBo Master）参数 <span class="tag" id="dgRunTag">未运行</span></h3>
+      <div class="body-pad">
+        <div class="stats" style="padding:0 0 6px">
+          <div class="stat"><b id="dgStLv">—</b><i>当前关卡</i></div>
+          <div class="stat"><b id="dgStPhase">—</b><i>阶段</i></div>
+          <div class="stat"><b id="dgStStrat">—</b><i>选卡策略</i></div>
+          <div class="stat"><b id="dgStMult">—</b><i>BUFF倍率</i></div>
+          <div class="stat"><b id="dgStHeal">—</b><i>加血阈值</i></div>
+          <div class="stat"><b id="dgStLoop">—</b><i>关卡循环</i></div>
+          <div class="stat"><b id="dgStRounds">—</b><i>循环轮次</i></div>
+          <div class="stat"><b id="dgStKb">—</b><i>知识库战绩</i></div>
+        </div>
+        <div style="font-size:11px;color:var(--dim);margin-bottom:10px" id="dgStCmd">最后弹幕指令：—</div>
+
+        <div class="row">
+          <div class="field" style="flex:1"><label>起始关预置值（0-99）</label><input id="dgInStartLv" type="number" min="0" max="99" /></div>
+          <div class="field" style="flex:0 0 120px"><label>循环到第几关</label><input id="dgInEndLv" type="number" min="1" max="100" /></div>
+        </div>
+        <div style="font-size:10.5px;color:var(--dim);margin:-6px 0 8px">提示：预置值填 78 = 从第 79 关开打（游戏选任务界面会 +1）；0 = 从第 1 关打起</div>
+        <div class="switch"><span>自定义关卡无限循环</span><input type="checkbox" id="dgInLoopOn" style="width:auto" /></div>
+        <div class="row">
+          <div class="field" style="flex:1"><label>循环轮次上限（0=无限）</label><input id="dgInMaxRounds" type="number" min="0" max="9999" /></div>
+          <div class="field" style="flex:1"><label>BUFF 倍率（1=不改数据）</label><input id="dgInMult" type="number" min="1" max="999999" /></div>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:1"><label>选卡策略</label>
+            <select id="dgInStrat">
+              <option value="attack">攻击优先（默认）</option>
+              <option value="balanced">均衡</option>
+              <option value="resist">抗性/防御优先</option>
+              <option value="custom">自定义权重</option>
+              <option value="auto">自主决策（auto）</option>
+            </select>
+          </div>
+          <div class="field" style="flex:0 0 96px"><label>加血阈值%</label><input id="dgInHeal" type="number" min="5" max="95" /></div>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:1"><label>权重·攻速</label><input id="dgInWSpd" type="number" min="0" max="9" /></div>
+          <div class="field" style="flex:1"><label>权重·攻击</label><input id="dgInWAtk" type="number" min="0" max="9" /></div>
+          <div class="field" style="flex:1"><label>权重·生命</label><input id="dgInWHp" type="number" min="0" max="9" /></div>
+          <div class="field" style="flex:1"><label>权重·防御</label><input id="dgInWDef" type="number" min="0" max="9" /></div>
+          <div class="field" style="flex:1"><label>权重·属性攻</label><input id="dgInWEle" type="number" min="0" max="9" /></div>
+          <div class="field" style="flex:1"><label>权重·抗性</label><input id="dgInWRes" type="number" min="0" max="9" /></div>
+        </div>
+        <div class="switch"><span>同类里优先选百分比加成</span><input type="checkbox" id="dgInPreferPct" style="width:auto" /></div>
+        <div class="switch"><span>读取观众弹幕指令（策略/倍率/关卡/循环/状态）</span><input type="checkbox" id="dgInDmOn" style="width:auto" /></div>
+        <div class="switch"><span>自主调参（连败自动切均衡 + 提高加血阈值）</span><input type="checkbox" id="dgInAutoTune" style="width:auto" /></div>
+        <div class="switch"><span>AI 思考（LLM 决策，需本地 OpenAI 兼容服务）</span><input type="checkbox" id="dgInLlmOn" style="width:auto" /></div>
+        <div class="row" id="dgLlmRow" style="display:none">
+          <div class="field" style="flex:2"><label>AI 接口地址</label><input id="dgInLlmBase" placeholder="http://127.0.0.1:8080/v1" /></div>
+          <div class="field" style="flex:1"><label>模型</label><input id="dgInLlmModel" /></div>
+          <div class="field" style="flex:0 0 76px"><label>每N关</label><input id="dgInLlmEvery" type="number" min="1" max="100" /></div>
+        </div>
+        <div class="row" style="margin-top:4px">
+          <button class="primary sm" id="btnDgApply">应用到配置</button>
+          <button class="sm" id="btnDgSaveRestart">保存并重启导演</button>
+          <button class="ghost sm" id="btnDgReload" style="margin-left:auto">重置</button>
+        </div>
+        <div style="font-size:10.5px;color:var(--dim);margin-top:6px;line-height:1.5">
+          弹幕指令（观众可实时发）：策略 攻击|均衡|防御 · 倍率 N · 关卡 N · 循环 N-M · 循环 开|关 · 状态<br>
+          战绩与学到的参数跨局保存在 userData/dungeon-knowledge.json；表单改动需「保存并重启导演」生效
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>地图/玩法切换 <span class="tag" id="mapTag">地下城</span></h3>
+      <div class="body-pad" style="padding-bottom:4px">
+        <div class="row" style="flex-wrap:wrap;gap:6px">
+          <button class="primary sm" data-map="gacha">地下城</button>
+          <button class="sm" data-map="werewolf">弹幕狼人杀</button>
+          <button class="sm" data-map="rouge">这是什么颜色</button>
+          <button class="sm" data-map="chump">放学不许走</button>
+          <button class="sm" data-map="greatsword">物理学不存在</button>
+          <button class="sm" data-map="ball">抢球对战</button>
+          <button class="sm" data-map="frameball">跨房抢球</button>
+          <button class="sm" data-map="draw">鼠王争夺战</button>
+          <button class="sm" data-map="dj">弹幕舞台</button>
+          <button class="sm" data-map="hd">航海探索</button>
+          <button class="sm" data-map="jz">航海打捞</button>
+          <button class="sm" data-map="pet">宠物互动</button>
+          <button class="sm" data-map="xiuxian">修仙擂台</button>
+          <button class="ghost sm" data-map="auto" style="margin-left:auto">自动识别</button>
+        </div>
+        <div style="font-size:11px;color:var(--dim);margin:8px 0 6px" id="mapStatus">当前目标：Gacha 怪兽（地下城）</div>
+        <div style="font-size:10.5px;color:var(--dim);line-height:1.5">
+          点击即切换场景并热重启导演（游戏窗口不关、约 2 秒接管）；观众弹幕也可发「地图 地下城 / 狼人杀 / 颜色 / 放学 / 物理学 / 抢球 / 跨房 / 鼠王 / 舞台 / 航海 / 打捞 / 宠物 / 修仙 / 自动」实时切。<br>
+          狼人杀自动走「自动/自由模式」由导演代打；其余地图（含 2026-10-24 补全的 8 个 bundle 内模块）仅切场景，导演不代打（手动玩）。补全的 8 款在官方菜单/B站玩法店均无官方中文名，命名为贴图与文本实证主题，仅供识别。
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>点歌台 <span class="tag" id="qCount">队列 0</span></h3>
+      <div class="body-pad" style="padding-bottom:4px">
+        <div class="row">
+          <input id="searchInput" placeholder="搜索歌名 / 歌手" />
+          <button class="sm" id="btnSearch" style="flex:0 0 auto;white-space:nowrap">搜索</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="ghost sm" id="btnNext">下一首</button>
+          <button class="ghost sm" id="btnStopSong">停止播放</button>
+          <select id="provider" style="width:auto;margin-left:auto;padding:4px 8px;font-size:11.5px">
+            <option value="qq">QQ曲库</option>
+            <option value="netease">网易云曲库</option>
+          </select>
+        </div>
+        <div style="font-size:10.5px;color:var(--dim);margin-top:6px;line-height:1.5">
+          注：汽水音乐无公开接口无法直连，当前用 QQ/网易曲库搜歌，播放统一走网易云外链（出队前已实测可播，播不了的自动跳过）
+        </div>
+      </div>
+      <div class="scroll" id="searchResult" style="max-height:150px"></div>
+      <div class="scroll" id="queueList" style="max-height:110px;border-top:1px solid var(--line)"></div>
+    </div>
+
+    <div class="card">
+      <h3>正在播放 <span class="tag" id="npSrc"></span></h3>
+      <div class="body-pad" style="padding-bottom:6px">
+        <div class="np-name" id="npName">—</div>
+        <div class="np-artist" id="npArtist"></div>
+        <div class="np-next" id="nextUp">下一首：队列已空</div>
+      </div>
+      <div class="scroll lyric" id="lyricBox">
+        <div class="empty">暂无播放</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>配置</h3>
+      <div class="body-pad">
+        <div class="field"><label>直播间房间号</label><input id="roomId" placeholder="如 5391172" /></div>
+        <div class="field"><label>点歌指令</label><input id="songCmd" /></div>
+        <div class="switch"><span>启用 AI 解说</span><input type="checkbox" id="aiEnabled" style="width:auto" /></div>
+        <div class="switch"><span>弹幕自动 AI 回复</span><input type="checkbox" id="aiOnDanmaku" style="width:auto" /></div>
+        <div class="field" style="margin-top:6px"><label>AI 接口地址 (OpenAI 兼容)</label><input id="aiBase" placeholder="http://127.0.0.1:11434/v1" /></div>
+        <div class="row" style="gap:6px">
+          <div class="field" style="flex:1"><label>模型</label><input id="aiModel" placeholder="qwen2.5:7b" /></div>
+          <div class="field" style="flex:0 0 90px"><label>Key</label><input id="aiKey" placeholder="ollama" /></div>
+        </div>
+        <div class="field"><label>游戏 exe 路径</label>
+          <div class="row">
+            <input id="gameExe" placeholder="...\\start.exe" style="flex:1" />
+            <button class="sm" id="btnGameDetect" style="flex:0 0 auto;white-space:nowrap">自动检测</button>
+          </div>
+        </div>
+        <button class="primary" id="btnSave" style="width:100%">保存配置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>游戏操作 <span class="tag">canvas 点击 + AI 自动</span></h3>
+      <div class="body-pad">
+        <div class="row" style="margin-bottom:8px">
+          <button class="primary sm" id="btnGameOpen">打开游戏窗口</button>
+          <input id="gameCode" placeholder="身份码（开播设置-推流地址处获取）" style="flex:1" />
+          <button class="sm" id="btnGameFill">一键进游戏</button>
+        </div>
+        <div class="row" style="margin-bottom:8px">
+          <button class="ghost sm" id="btnGameShot">截取画面</button>
+          <button class="ghost sm" id="btnTapHost">主播报名</button>
+          <button class="ghost sm" id="btnTapBot10">x10</button>
+          <button class="ghost sm" id="btnTapStart">开始游戏</button>
+          <button class="ghost sm" id="btnTapFree">自由模式</button>
+          <button class="ghost sm" id="btnTapBack">返回大厅</button>
+        </div>
+        <div style="position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#000">
+          <img id="gameView" style="width:100%;display:block;cursor:crosshair;min-height:60px" />
+          <div id="gameEmpty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#556;font-size:12px">点「截取画面」查看游戏</div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label class="switch" style="flex:1;padding:0"><span>AI 自动玩（需视觉模型）</span><input type="checkbox" id="gameAutoSw" style="width:auto" /></label>
+        </div>
+        <div id="gameAiSay" style="font-size:12px;color:#cbb8ff;margin-top:4px;min-height:18px"></div>
+      </div>
+    </div>
+
+    <div class="card" id="cmdCard">
+      <h3>手动指令台（游戏指令） <span class="tag" id="cmdAccStatus">读取中…</span></h3>
+      <div class="body-pad">
+        <div class="field">
+          <label>选择账号（读取自 bili-relation-manager，已自动勾选具备发送权限者；可多选）</label>
+          <div id="cmdAccList" class="row" style="flex-wrap:wrap;gap:6px;align-items:flex-start"></div>
+        </div>
+        <div class="field">
+          <label>指令内容（游戏依据弹幕文本行动：报名 / 选号 1-100 / 444 投杀 / 666 救 / A·B·C·D 躲门 / 大厅）</label>
+          <input id="cmdInput" placeholder="输入要发的弹幕指令，如 报名" />
+        </div>
+        <div class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:8px">
+          <button class="ghost sm" data-cmd="报名">报名</button>
+          <button class="ghost sm" data-cmd="1">选1</button>
+          <button class="ghost sm" data-cmd="444">投杀444</button>
+          <button class="ghost sm" data-cmd="666">救666</button>
+          <button class="ghost sm" data-cmd="A">躲门A</button>
+          <button class="ghost sm" data-cmd="B">躲门B</button>
+          <button class="ghost sm" data-cmd="C">躲门C</button>
+          <button class="ghost sm" data-cmd="D">躲门D</button>
+          <button class="ghost sm" data-cmd="大厅">回大厅</button>
+        </div>
+        <div class="row" style="margin-bottom:8px">
+          <label style="font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px">默认选房
+            <select id="cmdRoom" style="width:auto;padding:4px 8px;font-size:11.5px">
+              <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+            </select>
+          </label>
+          <button class="primary sm" id="btnCmdStart" style="margin-left:auto">一键开始（报名+选房）</button>
+        </div>
+        <div class="row">
+          <button class="primary sm" id="btnCmdSend">发送（选中账号）</button>
+          <button class="ghost sm" id="btnCmdAll" style="margin-left:auto">全选 / 全不选</button>
+        </div>
+        <div id="cmdBox" class="scroll" style="max-height:120px;border-top:1px solid var(--line);margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div class="card" style="flex:0 0 160px">
+      <h3>运行日志</h3>
+      <div class="scroll" id="logBox"></div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

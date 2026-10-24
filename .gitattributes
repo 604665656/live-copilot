@@ -1,0 +1,9 @@
+# 统一文本文件行尾为 LF（跨平台公开仓库友好）
+* text=auto eol=lf
+
+# 明确二进制
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.zip binary

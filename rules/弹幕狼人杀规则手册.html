@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>弹幕狼人杀 · 规则手册（我的粉丝里有鬼）</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#171b2e; --panel2:#1d2237; --line:#2a3050;
+    --txt:#e8ecf5; --dim:#98a0bd; --acc:#7c8cff; --acc2:#ffb454;
+    --good:#3ecf8e; --evil:#ff6b8b; --neutral:#8b93b8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.7}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px}
+  header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:24px}
+  h1{margin:0 0 6px;font-size:26px;letter-spacing:.5px}
+  .sub{color:var(--dim);font-size:14px}
+  .searchbox{margin:20px 0;position:relative}
+  #q{width:100%;padding:14px 16px;font-size:15px;border-radius:12px;
+    border:1px solid var(--line);background:var(--panel);color:var(--txt);outline:none}
+  #q:focus{border-color:var(--acc)}
+  section{margin:28px 0}
+  h2{font-size:19px;margin:0 0 14px;padding-left:11px;border-left:4px solid var(--acc)}
+  h3{font-size:15px;margin:18px 0 8px;color:var(--acc2)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .card.hide{display:none}
+  .name{font-weight:600;font-size:15px;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;letter-spacing:.3px}
+  .t-evil{background:rgba(255,107,139,.16);color:#ff8fa6;border:1px solid rgba(255,107,139,.35)}
+  .t-good{background:rgba(62,207,142,.14);color:#5fe0ab;border:1px solid rgba(62,207,142,.32)}
+  .t-neu{background:rgba(139,147,184,.16);color:#aab2d5;border:1px solid rgba(139,147,184,.3)}
+  .t-type{background:rgba(124,140,255,.14);color:#a3b0ff;border:1px solid rgba(124,140,255,.3)}
+  .skill{font-size:13.5px;color:#dbe1f2}
+  ul.det{margin:8px 0 0;padding-left:18px;color:var(--dim);font-size:13px}
+  ul.det li{margin:3px 0}
+  .tip{margin-top:8px;font-size:12.5px;color:var(--acc2);background:rgba(255,180,84,.08);
+    border-left:3px solid var(--acc2);padding:6px 10px;border-radius:0 6px 6px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
+    border-radius:10px;overflow:hidden}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--panel2);color:var(--acc2);font-weight:600;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  code{background:rgba(124,140,255,.14);color:#b6c0ff;padding:2px 7px;border-radius:5px;
+    font-family:Consolas,Monaco,monospace;font-size:12.5px}
+  .flow{display:flex;flex-wrap:wrap;gap:8px}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:10px 13px;flex:1 1 210px;font-size:13px}
+  .step b{color:var(--acc2);font-size:12px;display:block;margin-bottom:3px}
+  .warn{background:rgba(255,107,139,.08);border:1px solid rgba(255,107,139,.28);
+    border-radius:10px;padding:12px 14px;font-size:13px;color:#ffc2ce}
+  .src{font-size:12.5px;color:var(--dim)}
+  .src a{color:var(--acc);text-decoration:none}
+  .src a:hover{text-decoration:underline}
+  .src li{margin:5px 0}
+  .empty{color:var(--dim);font-size:14px;padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>弹幕狼人杀 · 规则手册</h1>
+  <div class="sub">官方名《我的粉丝里有鬼》· 开发者：咕咕会所 · 支持 4–36 人同局 · 供本地 AI 主播助手播报/答疑使用</div>
+</header>
+
+<div class="searchbox">
+  <input id="q" placeholder="搜索角色、指令、规则…  例如：九尾、舔狗、444、老鼠、报名">
+</div>
+
+<section>
+  <h2>一句话规则</h2>
+  <div class="card">
+    <div class="skill">
+      游戏分<strong style="color:var(--good)">好人阵营（学生）</strong>与<strong style="color:var(--evil)">鬼阵营（女鬼）</strong>。
+      好人目标：<strong>把所有鬼全部处死</strong>；鬼目标：<strong>杀光所有好人</strong>。<br>
+      玩家夜里选择进 <code>A/B/C/D</code> 房间或留在<strong>大厅</strong>：
+      房间安全、不会被老鼠咬，但当晚会被同房间的鬼杀；大厅没有鬼，但有<strong>老鼠</strong>会随机吃好人。<br>
+      白天投票 → 最高票上台 → 全员投 <code>444</code>（处死）或 <code>666</code>（放过）→ 循环。
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>核心流程（4 个环节循环）</h2>
+  <div class="flow">
+    <div class="step"><b>① 报名</b>发 <code>报名</code> 加入，屏幕出现自己昵称的人物即成功</div>
+    <div class="step"><b>② 选择过夜区域</b>约 1 分钟，发 <code>A/B/C/D</code> 进房，不发则留大厅</div>
+    <div class="step"><b>③ 夜晚结算</b>鬼按技能杀人；大厅则由老鼠出没</div>
+    <div class="step"><b>④ 白天投票</b>约 1 分钟，实时最高票者上台；平票不上台</div>
+    <div class="step"><b>⑤ 审判</b>台上玩家可辩解，全员发 <code>444</code> 处死 / <code>666</code> 放过</div>
+    <div class="step"><b>⑥ 回到 ②</b>处决结束后循环，直到分出胜负</div>
+  </div>
+  <div class="warn" style="margin-top:12px">
+    <strong>弹幕延迟提醒：</strong>高清画质弹幕延迟约 <b>10 秒</b>，原画画质约 <b>8 秒</b>。播报时要提醒观众<strong>提前</strong>发指令。
+  </div>
+</section>
+
+<section>
+  <h2>房间开启规则（按存活人数）</h2>
+  <table>
+    <tr><th>场上有</th><th>开放的安全门</th></tr>
+    <tr><td>28 ~ 36 人</td><td>A、B、C、D 四个门全开</td></tr>
+    <tr><td>18 ~ 27 人</td><td>A、B、D 三个门</td></tr>
+    <tr><td>17 人以下</td><td>A、D 两个门</td></tr>
+  </table>
+  <div class="tip">进房间会清除已有的「老鼠印记」。投票时必须<strong>只发号码</strong>（如 <code>12</code>），带房间号（<code>A12</code>）无效。</div>
+</section>
+
+<section>
+  <h2>大厅与老鼠</h2>
+  <table>
+    <tr><th>项目</th><th>说明</th></tr>
+    <tr><td>基础概率</td><td>好人在大厅过夜，被老鼠吃掉的概率约 <code>1/3</code>（33%）</td></tr>
+    <tr><td>老鼠印记</td><td>在大厅过夜未被吃，号码下方 +1 个红点，最多 3 个；进房间清零</td></tr>
+    <tr><td>可爱的老鼠</td><td>每多 1 个红点 +10%</td></tr>
+    <tr><td>普通的老鼠</td><td>每多 1 个红点 +15%</td></tr>
+    <tr><td>疯狂的老鼠</td><td>每多 1 个红点 +20%</td></tr>
+    <tr><td>免疫</td><td>所有鬼免疫老鼠。老鼠是非玩家单位</td></tr>
+  </table>
+  <div class="tip">另有说法：投票处死好人、或在大厅站过一夜，都会增加红点。老鼠难度由主播在设置里调整。</div>
+</section>
+
+<section>
+  <h2>观众弹幕指令</h2>
+  <h3>核心玩法</h3>
+  <table>
+    <tr><th>指令</th><th>作用</th></tr>
+    <tr><td><code>报名</code></td><td>加入游戏；游戏进行中发任意弹幕可观战</td></tr>
+    <tr><td><code>A / B / C / D</code></td><td>进入对应房间过夜，大小写均可</td></tr>
+    <tr><td><code>玩家号码</code></td><td>投票，如 <code>12</code>；不能带房间号</td></tr>
+    <tr><td><code>444</code></td><td>审判阶段：处死台上玩家</td></tr>
+    <tr><td><code>666</code></td><td>审判阶段：放过台上玩家</td></tr>
+  </table>
+  <h3>皮肤 / 道具 / 其他</h3>
+  <table>
+    <tr><td><code>查询套装</code> / <code>更换套装</code> / <code>更换SSR001</code></td><td>查询与更换皮肤</td></tr>
+    <tr><td><code>查询{套装名}</code></td><td>例：<code>查询妖狐之夜</code> 查该系列拥有情况</td></tr>
+    <tr><td><code>舰长套装</code> / <code>舰长滤镜</code> / <code>滤镜4</code></td><td>舰长专属外观</td></tr>
+    <tr><td><code>碎片查询</code> / <code>兑换普通套装</code>（50）/ <code>兑换高级套装</code>（100）</td><td>碎片兑换</td></tr>
+    <tr><td><code>兑换编号</code></td><td>R级75 / SSR级150 / UR级300 碎片</td></tr>
+    <tr><td><code>兑换经典盲盒</code> / <code>轻奢</code> / <code>豪华</code></td><td>28 / 58 / 100 碎片</td></tr>
+    <tr><td><code>签到</code></td><td>舰长签到免费 10 抽扭蛋</td></tr>
+    <tr><td><code>钓鱼</code> / <code>钓鱼查询</code> / <code>查询鱼币</code></td><td>钓鱼小玩法</td></tr>
+    <tr><td><code>锁定{号码}</code></td><td>配合礼物投掷特效给指定观众</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>角色技能</h2>
+  <h3 style="color:var(--evil)">鬼阵营</h3>
+  <div class="grid" id="roles-evil"></div>
+  <h3 style="color:var(--good)">好人阵营</h3>
+  <div class="grid" id="roles-good"></div>
+  <div class="empty" id="noresult" style="display:none">没有匹配的角色</div>
+</section>
+
+<section>
+  <h2>预言家（流浪汉）查验结果</h2>
+  <table>
+    <tr><th>显示</th><th>含义</th></tr>
+    <tr><td><strong style="color:var(--good)">绿泡泡（金水）</strong></td><td>判定为好人</td></tr>
+    <tr><td><strong style="color:#b06bff">紫泡泡（查杀）</strong></td><td>判定为鬼</td></tr>
+    <tr><td><strong style="color:var(--evil)">红泡泡</strong></td><td>中蛊状态（草鬼婆下蛊），可与预言家泡泡同时出现</td></tr>
+  </table>
+  <div class="warn" style="margin-top:10px">
+    特例（播报时最容易翻车，务必记牢）：
+    <ul style="margin:8px 0 0;padding-left:18px">
+      <li>查到<strong>乌鸦哥</strong>（其实是好人）→ 显示<strong>查杀</strong></li>
+      <li>查到<strong>未开刀的狐狸/狐仙</strong> → 显示<strong>金水</strong></li>
+      <li>查到<strong>未觉醒的九尾狐仙</strong> → 显示<strong>金水</strong></li>
+      <li><strong>疯子</strong>是好人但面板与鬼一致，容易被自己盘错</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>主播侧操作</h2>
+  <table>
+    <tr><td><b>游戏控制</b></td><td>开始游戏、跳过任意环节、一票处决玩家</td></tr>
+    <tr><td><b>场景切换</b></td><td>展开 home 键 → 吊牌 → 换选门更换场景（如薄荷教室）</td></tr>
+    <tr><td><b>查看角色</b></td><td>吊牌功能内查看</td></tr>
+    <tr><td><b>游戏设置</b></td><td>home 键 → 设置：显示、时间、角色配比、老鼠强度</td></tr>
+    <tr><td><b>查验功能</b></td><td>点击查验看玩家身份，可私信告知玩家</td></tr>
+    <tr><td><b>扭蛋姬</b></td><td>切换盲盒主题，观众抽到的均为主播设定的池子</td></tr>
+    <tr><td><b>买家秀</b></td><td>点击页签可切换本周特惠 / 切回；点编号牌快速换套装</td></tr>
+    <tr><td><b>主播秀</b></td><td>加入游戏后可点自己切换套装</td></tr>
+    <tr><td><b>添加机器人</b></td><td>凑人数用：单次 +1 人，<code>x10</code> 按钮一次 +10 人</td></tr>
+    <tr><td><b>主播报名</b></td><td>主播以玩家身份加入本局</td></tr>
+  </table>
+  <div class="tip">提示：只有<strong>「自由模式」</strong>带自定义设置入口；<strong>「妖狐之夜」</strong>是固定规则板子，没有自定义。</div>
+</section>
+
+<section>
+  <h2>资料来源（可核验）</h2>
+  <ul class="src">
+    <li>B站互动玩法官方详情页《我的粉丝里有鬼》— <a href="https://play-live.bilibili.com/details/1650229721834?from=1" target="_blank">play-live.bilibili.com/details/1650229721834</a>（官方使用说明、弹幕指令、版本更新）</li>
+    <li>电玩帮《B站弹幕互动游戏〈我的粉丝里有鬼〉角色介绍》— <a href="https://www.vgover.com/news/174532" target="_blank">vgover.com/news/174532</a>（阵营/房间/老鼠/角色技能主体）</li>
+    <li>B站专栏 cv26794482《我的粉丝里有鬼 玩法,指令,皮肤等》— <a href="https://www.bilibili.com/read/cv26794482/" target="_blank">bilibili.com/read/cv26794482</a>（鬼阵营技能、签到/钓鱼/皮肤指令）</li>
+    <li>B站专栏《弹幕狼人杀人物技能》— <a href="https://www.bilibili.com/opus/755919277991657497" target="_blank">bilibili.com/opus/755919277991657497</a>（技能补充与判定细节）</li>
+    <li>B站专栏 rl547672《我的粉丝有鬼》— <a href="https://www.bilibili.com/read/readlist/rl547672" target="_blank">bilibili.com/read/readlist/rl547672</a>（四环节流程、按人数开门、老鼠印记）</li>
+    <li>B站专栏《弹幕狼人杀游戏规则》— <a href="https://www.bilibili.com/read/mobile?id=15766586" target="_blank">read/mobile?id=15766586</a>（36人6女鬼、老鼠印迹概率、弹幕延迟）</li>
+    <li>B站专栏《4.20玩法更新》— <a href="https://www.bilibili.com/opus/651128050342166568" target="_blank">bilibili.com/opus/651128050342166568</a>（观众等级、摇奖机、套装品质）</li>
+    <li>百度知道《B站弹幕狼人杀怎么玩》— <a href="https://zhidao.baidu.com/question/633248816614569604.html" target="_blank">zhidao.baidu.com/question/633248816614569604</a>（早期版本流程，与现行有出入）</li>
+  </ul>
+  <div class="warn" style="margin-top:12px">
+    <strong>可信度说明：</strong>开发者「咕咕会所」已停更，官方页面版本停留在 0.0.7（2022-09-01）。部分角色（如<strong>狸猫</strong>）来自版本日志与玩家整理，<strong>不同主播的自定义板子启用的角色集合可能不同</strong>；实际开局时请以房间内「设置 / 吊牌」显示的板子为准。
+  </div>
+</section>
+
+</div>
+
+<script>
+const ROLES = [
+  {n:"女鬼（普通鬼）",c:"鬼阵营",t:"核心",s:"每晚进入房间后随机杀死 1 名好人；在大厅不能开刀；不能杀女鬼。",tip:"拿到鬼一定要进房，否则整夜无所事事。",d:[]},
+  {n:"双面鬼",c:"鬼阵营",t:"强化",s:"每晚进入房间后随机杀死 2 名好人；同样不能在大厅开刀。",tip:"一刀双人，极强的轮次牌。",d:[]},
+  {n:"单眼鬼",c:"鬼阵营",t:"节奏",s:"单数夜晚不开刀；偶数夜晚可在房间内一次性杀 3 人。",tip:"爆发呈隔天，好人要盯偶数夜。",d:[]},
+  {n:"鬼格格",c:"鬼阵营",t:"破防",s:"每晚杀 1 人，房间和大厅都能开刀，且无视一切保命技能（金钟罩、舔狗保护、花瓶复活甲全部失效）。",tip:"在房间杀鬼娃则不出生；在大厅杀鬼娃则可以「接生」出生。",d:[]},
+  {n:"草鬼婆（鬼婆）",c:"鬼阵营",t:"控制",s:"必须进房才能下蛊；每晚对房间内 1 名玩家下蛊（鬼也可能中蛊）。下蛊后第二天冒红泡泡，此后每天 50% 概率毒发身亡。",tip:"",d:["下蛊动作先于其他一切动作（先手）","不给乌鸦哥下蛊，乌鸦哥也不中蛊","若当晚未毒发且在房间内，会发生「毒传毒」传染；在大厅不传染","中蛊使武林高手无法开金钟罩、花瓶被刀不用复活甲","流浪汉可以查验解毒","被下蛊玩家是否死亡，与草鬼婆后续是否存活无关"]},
+  {n:"九尾狐仙（九尾妖狐）",c:"鬼阵营",t:"成长",s:"每晚固定觉醒 1 条尾巴；所在房间（或大厅）每死 1 名好人额外多长 1 条。集满 9 条觉醒。",tip:"觉醒前查验金水且不能开刀；觉醒后房间里一次刀 3 人、大厅刀 1 人，均无视技能。",d:["觉醒前意外死亡：带走与当前尾巴数相同数量的好人","觉醒当天死亡：带走 9 个好人","觉醒后死亡：不再带走好人","觉醒当天查验为金水，觉醒后查验为查杀","尾巴计算：毒发身亡、鬼娃出生的刀均计入；舔狗/高手挡刀成功不计入；大厅老鼠咬死不计入"]},
+  {n:"狐狸（狐仙）",c:"鬼阵营",t:"潜伏",s:"场上还有其他鬼时（草鬼婆除外）不现身、不能开刀，且被查验为金水；其他鬼全部死亡后才能进房开刀，此时查验显示为查杀。",tip:"狐狸杀人之前，流浪汉是不会发现他的——好人末轮的隐藏危机。",d:[]},
+  {n:"老鼠",c:"中立（非玩家）",t:"环境",s:"夜晚大厅内约 1/3 概率吃掉好人；对有老鼠标记（红点）的好人更有食欲。所有鬼免疫。",tip:"难度由主播设置：可爱的 / 普通的 / 疯狂的老鼠。",d:[]},
+
+  {n:"学生",c:"好人阵营",t:"平民",s:"没有任何技能，行使投票权参与白天票选。",tip:"站大厅有约 1/3 概率被老鼠咬死。",d:[]},
+  {n:"流浪汉",c:"好人阵营",t:"查验",s:"夜晚在房间内随机查验一名玩家身份：好人显示金水（绿泡泡），鬼显示查杀（紫泡泡）。可以查验自己。",tip:"",d:["特例：查到好人阵营的「乌鸦哥」显示为查杀","特例：查到未开刀的「狐仙/狐狸」、未觉醒的「九尾狐仙」显示为金水","可以通过查验解掉草鬼婆的毒"]},
+  {n:"花瓶妹",c:"好人阵营",t:"复活",s:"有两条命。第一次被刀（鬼格格除外）不死，寄居花瓶内苟活；满命花瓶可在投票阶段投给一名已死的好人灵魂，处决阶段结束后该好人复活。",tip:"被鬼格格 / 鳌大人 / 狐狸杀 → 不能复活；投票死亡可以复活。",d:["被女鬼杀过或中蛊后再被刀 → 直接死亡，不触发复活甲"]},
+  {n:"舔狗",c:"好人阵营",t:"保护",s:"进房后可随机保护同一房间的 1 名好人，为爱挡刀；挡刀成功自己不会死，有夜间动画提示。",tip:"鬼格格的必杀刀无视舔狗的保护。",d:["不能连续两晚为同一个人挡刀"]},
+  {n:"妈宝男",c:"好人阵营",t:"追轮",s:"以任何形式死去（现包括被踩死）时，带走他前一天投票的玩家。一次性技能，只在死亡时触发。",tip:"",d:["若前一天投票的玩家已死亡，则不会发生任何事","若前一天没有投票，则带上上一天投票的玩家","中蛊也不会让技能失效"]},
+  {n:"鳌大人（鳌拜）",c:"好人阵营",t:"强追轮",s:"每天投票阶段可当场单独处决自己投票的对象（每天一次，非一次性）。审判结束后表明身份并带走目标。",tip:"台上玩家大家都能处死，所以鳌大人应投给「台下」真正怀疑的人；只要存活每轮都能用。",d:[]},
+  {n:"武林高手",c:"好人阵营",t:"防御",s:"未中蛊时，每次入夜受威胁有 50% 概率开启金钟罩；期间鬼刀不死、老鼠咬不死，可挡住除「处死」和「下蛊」外的一切威胁。",tip:"鬼格格可以无视金钟罩直接杀死。",d:["中蛊时无法发动金钟罩"]},
+  {n:"乌鸦哥",c:"好人阵营",t:"干扰",s:"本体是好人，但被查验时显示为查杀（紫泡泡），极易被误杀。不会中草鬼婆的蛊。",tip:"草鬼婆不会给乌鸦哥下蛊；若乌鸦哥恰好被下蛊且没被刀，白天会少一个红泡泡。",d:[]},
+  {n:"鬼孩子（鬼娃）",c:"可变（初始好人）",t:"变节",s:"初始属于好人阵营。在房间被女鬼杀死后变身为鬼阵营成员，之后每天开一刀（大厅不能开刀）。",tip:"",d:["在房间被鬼格格杀死 → 不会加入鬼阵营","被草鬼婆下蛊毒死 → 不会加入鬼阵营","在大厅被老鼠咬死 → 不会加入鬼阵营","在大厅被鬼格格杀死 → 可以接生出生","特别规定：同晚被毒被刀出生，第二晚死且不能开刀"]},
+  {n:"醉鬼",c:"好人阵营",t:"混乱",s:"初始面板随机显示场上某个好人身份。当发现没有对应技能、或该身份已全部死亡时，才知道自己是醉鬼。死亡后面板恢复正常，无技能。",tip:"",d:[]},
+  {n:"疯子",c:"好人阵营",t:"混乱",s:"初始面板随机显示某个鬼身份，面板与鬼一致（能看到所有鬼的号码）。当你是鬼却被查验为金水、或显示的身份已全部死亡时才发现自己是疯子。死亡后面板恢复正常。",tip:"默认规矩：疯子清醒后不能报出鬼的号码，最好也不要参与投票。",d:[]},
+  {n:"狸猫",c:"好人阵营",t:"反伤",s:"白天被投票处决时不会死，会亮明身份并带走场上所有投自己票的存活者。",tip:"部分房间板子可能未启用此角色。",d:["「大人」（鳌大人）有小概率不会被踩死"]}
+];
+
+function tagCls(c){
+  if(c.indexOf('鬼阵营')>=0) return 't-evil';
+  if(c.indexOf('好人阵营')>=0) return 't-good';
+  return 't-neu';
+}
+function render(){
+  g.innerHTML=''; gi.innerHTML='';
+  let hits=0;
+  ROLES.forEach(r=>{
+    const el=document.createElement('div');
+    el.className='card';
+    el.dataset.search=(r.n+' '+r.c+' '+r.t+' '+r.s+' '+r.tip+' '+r.d.join(' ')).toLowerCase();
+    el.innerHTML=`<div class="name">${r.n}
+        <span class="tag ${tagCls(r.c)}">${r.c}</span>
+        <span class="tag t-type">${r.t}</span></div>
+      <div class="skill">${r.s}</div>
+      ${r.d.length? `<ul class="det">${r.d.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}
+      ${r.tip? `<div class="tip">${r.tip}</div>`:''}`;
+    (r.c.indexOf('鬼阵营')>=0 ? g : gi).appendChild(el);
+  });
+}
+const g=document.getElementById('roles-evil');
+const gi=document.getElementById('roles-good');
+render();
+
+document.getElementById('q').addEventListener('input', function(){
+  const k=this.value.trim().toLowerCase();
+  let total=0;
+  document.querySelectorAll('.card[data-search]').forEach(el=>{
+    const hit = !k || el.dataset.search.indexOf(k)>=0;
+    el.classList.toggle('hide',!hit);
+    if(hit) total++;
+  });
+  document.getElementById('noresult').style.display = total? 'none':'block';
+});
+</script>
+</body>
+</html>

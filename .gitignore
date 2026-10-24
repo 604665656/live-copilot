@@ -1,0 +1,113 @@
+# =====================================================================
+# 公开仓库 .gitignore —— 默认忽略一切，仅放行自研应用源码（防泄漏保险）
+# 本仓库只放「弹幕游戏 AI 导演 / 助手」自研源码与独立配置；
+# 厂商专有代码(game-src/game-pkg)、凭据、真实用户数据、日志、截图、node_modules 一律不入库。
+# =====================================================================
+
+# 默认忽略所有文件与目录
+*
+
+# ---- 放行：自研源码与文档 ----
+!.gitignore
+!.gitattributes
+!README.md
+!GAME-ANALYSIS.md
+!GAME-CONTROL-MATRIX.md
+!STATUS.md
+!package.json
+!package-lock.json
+
+# 核心应用入口
+!main.js
+!preload.js
+!supervisor.js
+!_assistant_run.js
+
+# 导演（Worker）/ 重启 / UI 重载
+!_director2.js
+!_director.js
+!_restart_director.js
+!_restart_director_via_cdp.js
+!_reload_ui.js
+
+# 基础设施 / 调试辅助
+!_cdp.js
+!_game_cdp.js
+!_game_cdp_lib.js
+!_hot_restart.js
+!_migrate_cfg.js
+!verify-gamehost.js
+!game-shell/
+
+# 自研玩法自动化脚本
+!dungeon_conquer.js
+!autoplay.js
+!autobot.js
+!play.js
+!register.js
+!join_others_dm.js
+!ai-selftest.js
+
+# 框架源码目录（src/）、控制面板（ui/）、规则库（rules/）
+!src/
+!src/**
+!ui/
+!ui/**
+!rules/
+!rules/**
+
+# =====================================================================
+# 黑名单保险（即便上面误放行，这些也绝不入库）
+# =====================================================================
+# 凭据 / 真实账号 / 房间数据
+win0_creds.json
+_msconfig.json
+roominfo.json
+config.json
+*_knowledge.json
+roster*.json
+bobo_buffs.json
+game-clickables.json
+game-texts.json
+game-tree.json
+panels.json
+plan.json
+_cfgload_view.json
+_bli_apps.json
+_t00.json
+_t01.json
+_t13.json
+observe.out.json
+
+# 厂商专有代码（版权）
+game-src/
+game-pkg/
+.asar_tmp/
+
+# 依赖与构建产物
+node_modules/
+dist/
+build/
+gameasar
+
+# 日志
+*.log
+*.out
+ai-selftest.out
+
+# 截图 / 抓取产物 / 探针数据
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+_tex/
+probe-out/
+sim-logs/
+scene-json/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+.workbuddy/
